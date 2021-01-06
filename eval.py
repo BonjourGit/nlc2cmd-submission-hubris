@@ -75,7 +75,7 @@ def get_tokenizer(model_name):
     return transformers.GPT2Tokenizer.from_pretrained(f'{model_name}')
 
 def get_model(model_name):
-    return transformers.GPT2LMHeadModel.from_pretrained(f'{model_name}')
+    return transformers.GPT2LMHeadModel.from_pretrained(f'{model_name}', local_files_only=True)
 
 
 def word_simil(refr, new):
@@ -127,6 +127,8 @@ def decode(tokenizer, v):
 
 def predict_single(model, tokenizer, prompt, top=1):
     prompt = tokenize_query(tokenizer, prompt)
+    if torch.cuda.is_available():
+        prompt = prompt.to('cuda')
 
     try:
         outputs = generate_single(
@@ -162,9 +164,13 @@ def main():
     print('-- Loading models...')
     tokenizer1 = get_tokenizer('gpt2-large')
     model1 = get_model('jaron-maene/gpt2-large-nl2bash')
+    if torch.cuda.is_available():
+        model1.to('cuda')
 
     tokenizer2 = get_tokenizer('gpt2-medium')
     model2 = get_model('jaron-maene/gpt2-medium-nl2bash')
+    if torch.cuda.is_available():
+        model2.to('cuda')
     print('-- Models loaded')
 
     if len(sys.argv) < 2:
